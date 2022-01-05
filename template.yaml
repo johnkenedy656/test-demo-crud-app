@@ -1,0 +1,79 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  crud
+
+  Sample SAM Template for crud
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 60
+
+Resources:
+  CRUDFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: crud/
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.7
+      Architectures:
+        - x86_64
+      Events:
+        get:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /producttest
+            Method: get
+        post:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /producttest
+            Method: post
+        get1:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /producttest/{productId}
+            Method: get
+        put:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /producttest/{productId}
+            Method: put
+        delete:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /producttest/{productId}
+            Method: delete
+      Policies:
+        - AmazonDynamoDBFullAccess
+  
+  productTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: product
+      AttributeDefinitions: 
+        - AttributeName: productId
+          AttributeType: S
+      BillingMode: PROVISIONED
+      ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+      KeySchema: 
+        - AttributeName: productId
+          KeyType: HASH
+
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  CRUDApi:
+    Description: "API Gateway endpoint URL for Prod stage for Hello World function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/crud/"
+  CRUDFunction:
+    Description: "CRUD Lambda Function ARN"
+    Value: !GetAtt CRUDFunction.Arn
+  CRUDFunctionIamRole:
+    Description: "Implicit IAM Role created for CRUD function"
+    Value: !GetAtt CRUDFunctionRole.Arn
